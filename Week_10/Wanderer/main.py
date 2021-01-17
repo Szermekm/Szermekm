@@ -1,40 +1,90 @@
 from tkinter import *
 
-class Box(object):
-    def __init__(self):
-        self.testBoxX = 300
-        self.testBoxY = 300
+class Floor(object):
+    def __init__(self, X, Y):
+        self.X = X
+        self.Y = Y
+        self.file = PhotoImage(file="floor.gif")
+        self.img = canvas.create_image(self.X, self.Y, image=self.file, anchor=NW)
 
-    def draw(self, canvas):
-        canvas.create_rectangle(0, 0, 600, 600, fill='white')
-        canvas.create_rectangle(self.testBoxX, self.testBoxY, self.testBoxX+100, self.testBoxY+100, fill='lime green')
+class Wall(object):
+    def __init__(self, X, Y):
+        self.X = X
+        self.Y = Y
+        self.file = PhotoImage(file="wall.gif")
+        self.img = canvas.create_image(self.X, self.Y, image=self.file, anchor=NW)
 
-# Create the tk environment as usual
+class Hero(object):
+    def __init__(self, X, Y):
+        self.X = X
+        self.Y = Y
+        self.file = PhotoImage(file="hero_down.gif")
+        self.img = canvas.create_image(self.X, self.Y, image=self.file, anchor=NW)
+    def MoveUp(self):
+        canvas.delete(self.img)
+        self.file = PhotoImage(file="hero_up.gif")
+        self.img = canvas.create_image(self.X, self.Y, image=self.file, anchor=NW)
+    def MoveDown(self):
+        canvas.delete(self.img)
+        self.file = PhotoImage(file="hero_down.gif")
+        self.img = canvas.create_image(self.X, self.Y, image=self.file, anchor=NW)
+    def MoveRight(self):
+        canvas.delete(self.img)
+        self.file = PhotoImage(file="hero_right.gif")
+        self.img = canvas.create_image(self.X, self.Y, image=self.file, anchor=NW)
+    def MoveLeft(self):
+        canvas.delete(self.img)
+        self.file = PhotoImage(file="hero_left.gif")
+        self.img = canvas.create_image(self.X, self.Y, image=self.file, anchor=NW)
+
 root = Tk()
-canvas = Canvas(root, width=600, height=600)
 
-# Creating a box that can draw itself in a certain position
-box = Box()
+canvas = Canvas(root, width=720, height=720)
 
-# Create a function that can be called when a key pressing happens
-def on_key_press(e):
-    # When the keycode is 111 (up arrow) we move the position of our box higher
-    if e.keycode == 111:
-        box.testBoxY = box.testBoxY - 100
-    elif e.keycode == 116:
-        box.testBoxY = box.testBoxY + 100
-    # and lower if the key that was pressed the down arrow
-    # draw the box again in the new position
-    box.draw(canvas)
-
-# Tell the canvas that we prepared a function that can deal with the key press events
-canvas.bind("<KeyPress>", on_key_press)
 canvas.pack()
 
-# Select the canvas to be in focused so it actually recieves the key hittings
 canvas.focus_set()
 
-# Draw the box in the initial position
-box.draw(canvas)
+floor = []
+board = [[0, 0, 1, 0, 0, 1, 1, 1, 0, 0], [0, 0, 0, 0, 1, 1, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 1, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 0, 0], [0, 0, 0, 1, 1, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 1, 1, 0, 0, 0, 0], [0, 0, 0, 0, 1, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 1, 1, 1, 0, 0, 0, 0]]
+for row, i in enumerate(board, start=0):
+    for column, j in enumerate(i, start=0):
+        if j == 0:
+            floor.append(Floor(column*72, row*72))
+        elif j == 1:
+            floor.append(Wall(column*72, row*72))
+
+hero = Hero(0, 0)
+def is_floor(X, Y):
+    return board[int(Y/72)][int(X/72)] == 0
+
+
+def on_key_press(e):
+    if e.keycode == 38:
+        if hero.Y - 72 >= 0:
+            if is_floor(hero.X, hero.Y-72):
+                hero.Y = hero.Y-72
+        hero.MoveUp()
+    elif e.keycode == 40:
+        if hero.Y + 72 <= 648:
+            if is_floor(hero.X, hero.Y+72):
+                hero.Y = hero.Y+72
+        hero.MoveDown()
+    elif e.keycode == 37:
+        if hero.X - 72 >= 0:
+            if is_floor(hero.X-72, hero.Y):
+                hero.X = hero.X-72
+        hero.MoveLeft()
+    elif e.keycode == 39:
+        if hero.X + 72 <= 648:
+            if is_floor(hero.X + 72, hero.Y):
+                hero.X = hero.X+72
+        hero.MoveRight()
+
+
+canvas.bind("<KeyPress>", on_key_press)
 
 root.mainloop()
